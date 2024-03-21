@@ -33,7 +33,7 @@ function Login() {
       })
       .then((data) => {
         setUser(data);
-        history.push('/home'); // Redirect to the home page
+        history.push('/home'); 
       })
       .catch((error) => {
         console.error('Error:', error);

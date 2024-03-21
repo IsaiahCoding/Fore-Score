@@ -134,15 +134,16 @@ class Logout(Resource):
         return make_response({'message': 'Logged out'}, 200)
 
 class CheckSession(Resource):
-    
+
     def get(self):
         user = User.query.filter(User.id == session.get('user_id')).first()
-        if not user:
-            return make_response({'error': "Unauthorized: you must be logged in to make that request"}, 401)
+        if user:
+            return user.to_dict()
         else:
-            return make_response(user.to_dict(), 200)
+            return {'message': '401: Not Authorized'}, 401
 
-api.add_resource(CheckSession, '/check_session', endpoint='check_session')
+api.add_resource(CheckSession, '/check_session')
+
 
 
 @app.route('/club_distance', methods=['GET', 'POST'])
