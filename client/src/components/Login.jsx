@@ -1,9 +1,9 @@
 import React, { useContext, useState } from 'react';
-import { useHistory } from 'react-router-dom'; // Import useHistory hook
+import { useHistory } from 'react-router-dom';
 import { UserContext } from '../context/UserContext';
 
 function Login() {
-  const history = useHistory(); // Initialize useHistory hook
+  const history = useHistory();
   const { setUser } = useContext(UserContext);
   const [formData, setFormData] = useState({
     username: '',
@@ -18,26 +18,28 @@ function Login() {
   const handleSubmit = (e) => {
     e.preventDefault();
     const { username, password } = formData;
-    fetch('http://localhost:3000/login', {
+    fetch('/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ username, password }),
     })
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw new Error('Login failed');
-      })
-      .then((data) => {
-        setUser(data);
-        history.push('/home'); 
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Login failed'); 
+      }
+      return response.json();
+    })
+    .then(data => {
+      setUser(data);
+      sessionStorage.setItem('currentUser', JSON.stringify(data)); 
+      history.push('/home'); 
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      
+    });
   };
 
   return (
@@ -46,21 +48,11 @@ function Login() {
       <form onSubmit={handleSubmit}>
         <label>
           Username:
-          <input
-            type="text"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-          />
+          <input type="text" name="username" value={formData.username} onChange={handleChange} />
         </label>
         <label>
           Password:
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-          />
+          <input type="password" name="password" value={formData.password} onChange={handleChange} />
         </label>
         <button type="submit">Login</button>
       </form>

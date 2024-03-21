@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { useHistory } from 'react-router-dom'; 
 
 const SignupForm = () => {
   const [formData, setFormData] = useState({
@@ -8,7 +8,7 @@ const SignupForm = () => {
     email: '',
     password: '',
   });
-
+  const history = useHistory();
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -17,10 +17,23 @@ const SignupForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/signup', formData);
-      console.log(response.data); // Handle success (e.g., redirect to dashboard)
+      const response = await fetch('/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data); 
+        history.push('/home');
+      } else {
+        const errorData = await response.json();
+        console.error('Signup failed:', errorData); 
+      }
     } catch (error) {
-      console.error('Signup failed:', error.response.data); // Handle error
+      console.error('Signup failed:', error); 
     }
   };
 

@@ -12,7 +12,7 @@ from config import app, db, api
 from models import User, Club, ClubDistance, ClubDistanceJoin, Scorecard, HoleStat
 
 
-# Views go here!
+# #Views go here!
 # allowed_endpoints = ['signup', 'login', 'check_session']
 # @app.before_request
 # def check_if_logged_in():
@@ -133,6 +133,8 @@ class Logout(Resource):
         session['user_id'] = None
         return make_response({'message': 'Logged out'}, 200)
 
+api.add_resource(Logout, '/logout', endpoint='logout')
+
 class CheckSession(Resource):
 
     def get(self):
@@ -222,6 +224,61 @@ def scorecard_id(scorecard_id):
             return make_response({'message': 'Scorecard deleted'}, 200)
     else:
         return make_response({'error': 'Scorecard not found'}, 404)
+
+@app.route('/holestats', methods=['GET','POST'])
+def holestats():
+    if request.method == 'GET':
+        holestats = HoleStat.query.all()
+        holestats_dict = [holestat.to_dict() for holestat in holestats]
+        return make_response(holestats_dict, 200)
+    elif request.method == 'POST':
+        data = request.get_json()
+        if data:
+            holestat = HoleStat(
+                scorecard_id = data.get('scorecard_id'),
+                hole_number = data.get('hole_number'),
+                par = data.get('par'),
+                score = data.get('score'),
+                putts = data.get('putts'),
+                fairway = data.get('fairway'),
+                green = data.get('green'),
+                bunker = data.get('bunker'),
+                penalty = data.get('penalty'),
+                )
+            db.session.add(holestat)
+            db.session.commit()
+            return make_response(holestat.to_dict(), 201)
+        else:
+            return make_response({'error': 'No data provided'}, 400)
+
+@app.route('/holestats/<int:holestat_id>', methods =['GET', 'PATCH', 'DELETE'])
+def holestat_id(holestat_id):
+    holestat = HoleStat.query.get(holestat_id)
+    if holestat:
+        if request.method == 'GET':
+            return make_response(holestat.to_dict(), 200)
+        elif request.method == 'PATCH':
+            data = request.get_json()
+            if data:
+                holestat.scorecard_id = data.get('scorecard_id', holestat.scorecard_id)
+                holestat.hole_number = data.get('hole_number', holestat.hole_number)
+                holestat.par = data.get('par', holestat.par)
+                holestat.score = data.get('score', holestat.score)
+                holestat.putts = data.get('putts', holestat.putts)
+                holestat.fairway = data.get('fairway', holestat.fairway)
+                holestat.green = data.get('green', holestat.green)
+                holestat.bunker = data.get('bunker', holestat.bunker)
+                holestat.penalty = data.get('penalty', holestat.penalty)
+                db.session.commit()
+                return make_response(holestat.to_dict(), 200)
+            else:
+                return make_response({'error': 'No data provided'}, 400)
+        elif request.method == 'DELETE':
+            db.session.delete(holestat)
+            db.session.commit()
+            return make_response({'message': 'Holestat deleted'}, 200)
+    else:
+        return make_response({'error': 'Holestat not found'}, 404)
 
         
 
