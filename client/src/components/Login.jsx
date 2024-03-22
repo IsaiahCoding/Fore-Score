@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useHistory } from 'react-router-dom';
 import { UserContext } from '../context/UserContext';
 
@@ -9,36 +9,39 @@ function Login() {
     username: '',
     password: '',
   });
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData({...formData, [name]: value});
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const { username, password } = formData;
     fetch('/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({
+        username: formData.username,
+        password: formData.password,
+      }),
     })
     .then(response => {
       if (!response.ok) {
-        throw new Error('Login failed'); 
+        throw new Error('Login failed'); // You can enhance error handling by using response data
       }
       return response.json();
     })
     .then(data => {
-      setUser(data);
-      sessionStorage.setItem('currentUser', JSON.stringify(data)); 
-      history.push('/home'); 
+      // Assuming the backend response includes user data on successful login
+      setUser(data); // Update user context
+      history.push('/home'); // Redirect to home page
     })
     .catch(error => {
       console.error('Error:', error);
-      
+      setError('Failed to log in. Please check your credentials.'); // Update error message to display to the user
     });
   };
 
@@ -46,15 +49,32 @@ function Login() {
     <div>
       <h1>Login</h1>
       <form onSubmit={handleSubmit}>
-        <label>
-          Username:
-          <input type="text" name="username" value={formData.username} onChange={handleChange} />
-        </label>
-        <label>
-          Password:
-          <input type="password" name="password" value={formData.password} onChange={handleChange} />
-        </label>
+        <div>
+          <label>
+            Username:
+            <input
+              type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              required
+            />
+          </label>
+        </div>
+        <div>
+          <label>
+            Password:
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+          </label>
+        </div>
         <button type="submit">Login</button>
+        {error && <p>{error}</p>}
       </form>
     </div>
   );

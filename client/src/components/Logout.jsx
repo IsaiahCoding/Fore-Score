@@ -1,31 +1,19 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
+import { UserContext } from '../context/UserContext';
 
-const Logout = ({ user }) => {
-  const handleLogout = () => {
-    fetch('/logout', {
-      method: 'DELETE',
-      credentials: 'include', // Include cookies in the request if using sessions
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      // Assuming the response is a success if it's ok
-      alert('Logged out successfully!');
-      // You can also redirect the user or perform other actions as needed
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('There was an error logging out. Please try again.');
+function Logout() {
+  const { setUser } = useContext(UserContext);
+  const history = useHistory();
+
+  useEffect(() => {
+    fetch('/logout', { method: 'DELETE' })
+    .then(() => {
+      setUser(null);
+      history.push('/login');
     });
-  };
+  }, [setUser, history]);
 
-  return (
-    <div>
-      <h2>Hello, {user.username}</h2>
-      <button onClick={handleLogout}>Logout</button>
-    </div>
-  );
-};
-
+  return null; // This component doesn't need to render anything.
+}
 export default Logout;

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom'; 
+import { useContext } from 'react';
+import { UserContext } from '../context/UserContext';
 
-const SignupForm = () => {
+function SignupForm() {
   const [formData, setFormData] = useState({
     name: '',
     username: '',
@@ -9,32 +11,28 @@ const SignupForm = () => {
     password: '',
   });
   const history = useHistory();
+  const { setUser } = useContext(UserContext);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData({...formData, [name]: value});
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      const response = await fetch('/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-      if (response.ok) {
-        const data = await response.json();
-        console.log(data); 
+    fetch('/signup', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(formData),
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.user) {
+        setUser(data.user);
         history.push('/home');
-      } else {
-        const errorData = await response.json();
-        console.error('Signup failed:', errorData); 
       }
-    } catch (error) {
-      console.error('Signup failed:', error); 
-    }
+    })
+    .catch(error => console.error('Error:', error));
   };
 
   return (
